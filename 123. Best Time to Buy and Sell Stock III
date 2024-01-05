@@ -1,0 +1,116 @@
+💡 Approach 1: Recursive Approach
+✨ Explanation
+The logic and approach for this solution involve recursively exploring the possibilities of buying and selling stocks with a given number of transactions. The function Recursive takes as input the stock prices, the current index (ind), a boolean flag (b for buy or sell), and the remaining transactions k. It returns the maximum profit that can be obtained. The function considers two options at each step: either buying or not buying the stock (if b is true), or selling or holding the stock (if b is false). It recursively explores these options to find the maximum profit.
+
+📝 Dry Run
+Let's dry run the Recursive function with an example:
+
+Input: prices = [3, 2, 6, 5, 0, 3], k = 2
+Start with index 0, b is true, and k is 2.
+At index 0, we can buy the stock, so we explore two options:
+Buy it and move to index 1 (profit: -3), or
+Leave it and move to index 1 (profit: 0).
+We choose the first option (buy), and the function moves to index 1 with k reduced by 1.
+This process continues, and we explore all possible options until we reach the end. The function returns the maximum profit.
+🔍 Edge Cases
+The Recursive function handles cases where the number of transactions is limited.
+🕸️ Complexity Analysis
+Time Complexity: O(2^n), where n is the number of stock prices. The function explores all possible combinations.
+Space Complexity: O(n), for the function call stack.
+🧑🏻‍💻 Codes
+class Solution {
+    public int recursive(int[] p, int ind, boolean b, int k) {
+        if (ind >= p.length || k <= 0)
+            return 0;
+
+        int ans = 0;
+
+        if (b) {
+            return Math.max(-p[ind] + recursive(p, ind + 1, !b, k), recursive(p, ind + 1, b, k));
+        } else {
+            return Math.max(p[ind] + recursive(p, ind + 1, !b, k - 1), recursive(p, ind + 1, b, k));
+        }
+    }
+
+    public int maxProfit(int k, int[] prices) {
+        return recursive(prices, 0, true, k);
+    }
+}
+💡 Approach 2: Dynamic Programming
+✨ Explanation
+The dynamic programming approach optimizes the previous solution by using memoization to store previously computed results. The function RecursionWithMemoisation is similar to the Recursive function but with memoization to avoid redundant calculations.
+
+📝 Dry Run
+The RecursionWithMemoisation function follows the same logic as the recursive approach but uses a memoization table to store and reuse intermediate results. This significantly improves the efficiency of the algorithm.
+
+🔍 Edge Cases
+The RecursionWithMemoisation function handles cases where the number of transactions is limited.
+🕸️ Complexity Analysis
+Time Complexity: O(n * k), where n is the number of stock prices, and k is the maximum number of transactions allowed.
+Space Complexity: O(n * k), for the memoization table.
+🧑🏻‍💻 Codes
+class Solution {
+    public int recursionWithMemoization(int[] p, int ind, boolean canBuy, int k, int[][][] dp) {
+        if (ind >= p.length || k <= 0)
+            return 0;
+
+        if (dp[ind][canBuy ? 1 : 0][k] != -1)
+            return dp[ind][canBuy ? 1 : 0][k];
+
+        int maxProfit;
+        if (canBuy) {
+            maxProfit = Math.max(-p[ind] + recursionWithMemoization(p, ind + 1, false, k, dp), recursionWithMemoization(p, ind + 1, true, k, dp));
+        } else {
+            maxProfit = Math.max(p[ind] + recursionWithMemoization(p, ind + 1, false, k - 1, dp), recursionWithMemoization(p, ind + 1, true, k, dp));
+        }
+
+        dp[ind][canBuy ? 1 : 0][k] = maxProfit;
+        return maxProfit;
+    }
+
+    public int maxProfit(int[] prices) {
+        int k = 2; // change the value of k as per the question
+        int[][][] dp = new int[prices.length + 1][3][k + 1];
+        for (int i = 0; i <= prices.length; i++) {
+            for (int j = 0; j < 3; j++) {
+                Arrays.fill(dp[i][j], -1);
+            }
+        }
+        return recursionWithMemoization(prices, 0, true, k, dp);
+    }
+}
+💡 Approach 3: Bottom-Up Dynamic Programming
+✨ Explanation
+The bottom-up dynamic programming approach solves the problem by iteratively calculating the maximum profit for each possible state. The function bottomup uses a 3D DP array to store results and iterates through the stock prices, transactions, and buying/selling states.
+
+📝 Dry Run
+The bottomup function iterates through the stock prices, transactions, and buying/selling states, filling in the DP table with the maximum profit at each state. It starts from the last day and works backward to compute the final result.
+
+🔍 Edge Cases
+The bottomup function handles cases where the number of transactions is limited.
+🕸️ Complexity Analysis
+Time Complexity: O(n * K), where n is the number of stock prices, and K is the maximum number of transactions allowed.
+Space Complexity: O(n * 2 * K), for the 3D DP table.
+🧑🏻‍💻 Codes
+class Solution {
+    public int bottomup(int K, int[] p) {
+        int[][][] dp = new int[p.length + 1][3][K + 1];
+        
+        for (int ind = p.length - 1; ind >= 0; ind--) {
+            for (int b = 0; b <= 1; b++) {
+                for (int k = 1; k <= K; k++) {
+                    if (b == 1) {
+                        dp[ind][b][k] = Math.max(-p[ind] + dp[ind + 1][0][k], dp[ind + 1][b][k]);
+                    } else {
+                        dp[ind][b][k] = Math.max(p[ind] + dp[ind + 1][1][k - 1], dp[ind + 1][b][k]);
+                    }
+                }
+            }
+        }
+        return dp[0][1][K];
+    }
+
+    public int maxProfit(int k, int[] prices) {
+        return bottomup(k, prices);
+    }
+}
